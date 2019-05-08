@@ -3,85 +3,71 @@
 }
 
 <script>
-    const baseURL = 'http://localhost:64160';
-    const client = new XMLHttpRequest()
+    //Set up loading screen
+    document.getElementById("inject-form-here").innerHTML = '<svg class="lds-spinner" id="lds-spinner" width="200px" height="200px" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid" style="background: none;"><g transform="rotate(0 50 50)"> <rect x="47" y="24" rx="9.4" ry="4.8" width="6" height="12" fill="#1d0e0b"> <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.9166666666666666s" repeatCount="indefinite"></animate> </rect></g><g transform="rotate(30 50 50)"> <rect x="47" y="24" rx="9.4" ry="4.8" width="6" height="12" fill="#1d0e0b"> <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.8333333333333334s" repeatCount="indefinite"></animate> </rect></g><g transform="rotate(60 50 50)"> <rect x="47" y="24" rx="9.4" ry="4.8" width="6" height="12" fill="#1d0e0b"> <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.75s" repeatCount="indefinite"></animate> </rect></g><g transform="rotate(90 50 50)"> <rect x="47" y="24" rx="9.4" ry="4.8" width="6" height="12" fill="#1d0e0b"> <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.6666666666666666s" repeatCount="indefinite"></animate> </rect></g><g transform="rotate(120 50 50)"> <rect x="47" y="24" rx="9.4" ry="4.8" width="6" height="12" fill="#1d0e0b"> <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.5833333333333334s" repeatCount="indefinite"></animate> </rect></g><g transform="rotate(150 50 50)"> <rect x="47" y="24" rx="9.4" ry="4.8" width="6" height="12" fill="#1d0e0b"> <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.5s" repeatCount="indefinite"></animate> </rect></g><g transform="rotate(180 50 50)"> <rect x="47" y="24" rx="9.4" ry="4.8" width="6" height="12" fill="#1d0e0b"> <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.4166666666666667s" repeatCount="indefinite"></animate> </rect></g><g transform="rotate(210 50 50)"> <rect x="47" y="24" rx="9.4" ry="4.8" width="6" height="12" fill="#1d0e0b"> <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.3333333333333333s" repeatCount="indefinite"></animate> </rect></g><g transform="rotate(240 50 50)"> <rect x="47" y="24" rx="9.4" ry="4.8" width="6" height="12" fill="#1d0e0b"> <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.25s" repeatCount="indefinite"></animate> </rect></g><g transform="rotate(270 50 50)"> <rect x="47" y="24" rx="9.4" ry="4.8" width="6" height="12" fill="#1d0e0b"> <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.16666666666666666s" repeatCount="indefinite"></animate> </rect></g><g transform="rotate(300 50 50)"> <rect x="47" y="24" rx="9.4" ry="4.8" width="6" height="12" fill="#1d0e0b"> <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.08333333333333333s" repeatCount="indefinite"></animate> </rect></g><g transform="rotate(330 50 50)"> <rect x="47" y="24" rx="9.4" ry="4.8" width="6" height="12" fill="#1d0e0b"> <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="0s" repeatCount="indefinite"></animate> </rect></g></svg>';
 
-    // Get multi-part response
-    client.open('GET', baseURL + '/MultiPart', true)
-    client.onreadystatechange = function () {
-        if (client.readyState == 4) {
-            const boundary = client.getResponseHeader('Content-Type').match(/boundary="(.+)"$/i)[1]
 
-            // Break the response into an array of seperate parts
-            var parts = parseMultipartBody(client.responseText, boundary);
+    //Get query params from Url to check for affiliate ID
+    var vars = {
+        versionNumber: 1,
+        siteUrl: window.location.href
+    };
 
-            // Handle each part
-            for (var x = 0; x < parts.length; ++x) {
-                // HTML Document or Fragment
-                if (parts[x].headers["content-type"] == "text/plain") {
-                    handleBody(parts[x]);
-                }
-                // CSS Stylesheet or file reference
-                if (parts[x].headers["content-type"] == "text/css") {
-                    handleCss(parts[x]);
-                }
-                // Scripts
-                if (parts[x].headers["content-type"] == "text/javascript") {
-                    handleJs(parts[x]);
-                }
+    var versionNumber = 1;
+    var siteUrl = window.location.href;
+    window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function (m, key, value) {
+        return vars[key] = value;
+    });
+
+    //Convert object to stringified Json to send as application/json
+    var affiliateDetails = JSON.stringify(vars);
+    console.log(vars);
+    console.log(affiliateDetails);
+    //Convert object to stringified Json to send as application/json
+
+    //Convert object to x-www-form-urlencoded
+    var formBody = [];
+    for (var property in vars) {
+        var encodedKey = encodeURIComponent(property);
+        var encodedValue = encodeURIComponent(vars[property]);
+        formBody.push(encodedKey + "=" + encodedValue);
+    }
+    formBody = formBody.join("&");
+    console.log(formBody);
+    //Convert object to x-www-form-urlencoded
+
+
+
+    if (vars.id) {
+        const baseURL = 'http://localhost:64160';
+        const client = new XMLHttpRequest()
+
+        // Get multi-part response
+        client.open('POST', baseURL + '/MultiPart/GetFormBuilder', true);
+        client.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+ 
+        client.send(formBody);
+        
+
+        client.onreadystatechange = function () {
+            if (client.readyState == 4) {
+                console.log(this.response);
+                var newScript = document.createElement('script');
+                newScript.innerHTML = this.response;
+                document.getElementsByTagName("body")[0].appendChild(newScript);
+            }
+            else {
+                console.error(client)
             }
         }
     }
-    client.send();
-
-    function parseMultipartBody(body, boundary) {
-        return body.split(`--${boundary}`).reduce((parts, part) => {
-            if (part && part.trim().length > 0 && part.trim() !== '--') {
-                const [head, body] = part.trim().split(/\r\n\r\n/g)
-                parts.push({
-                    body: body,
-                    headers: head.split(/\r\n/g).reduce((headers, header) => {
-                        const [key, value] = header.split(/:\s+/)
-                        headers[key.toLowerCase()] = value
-                        return headers
-                    }, {})
-                })
-            }
-            return parts
-        }, [])
+    else {
+        //noAffiliateMessage = "No Affilaite ID is present";
+        document.getElementById("inject-form-here").innerHTML = "No Affilaite ID is present";
+        console.log("No Affiliate ID is present");
     }
 
-    function handleBody(result) {
-        var newDiv = document.createElement('div');
-        newDiv.className = "PingYo-Block";
-        newDiv.innerHTML = result.body;
 
-        document.getElementsByTagName("body")[0].appendChild(newDiv);
-    }
-
-    function handleCss(result) {
-
-        //  This Block is if we return the CSS url in the multipart message
-        /*
-        var fileref = document.createElement("link");
-        fileref.rel = "stylesheet";
-        fileref.type = "text/css";
-        fileref.href = baseURL + result.body;
-        document.getElementsByTagName("head")[0].appendChild(fileref);
-        */
-        //  This Block is if we return the CSS data directly in the multipart message
-        var newStyle = document.createElement('style');
-        newStyle.innerHTML = result.body;
-        newStyle.setAttribute('type', 'text/css');
-        document.getElementsByTagName("head")[0].appendChild(newStyle);
-
-    }
-
-    function handleJs(result) {
-        var newScript = document.createElement('script');
-        newScript.innerHTML = result.body;
-        document.getElementsByTagName("body")[0].appendChild(newScript);
-    }
 </script>
 
 <div class="jumbotron">
